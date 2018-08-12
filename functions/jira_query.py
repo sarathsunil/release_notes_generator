@@ -5,6 +5,8 @@ import requests
 import random
 import string
 import urllib
+def root_dir():  # pragma: no cover
+    return os.path.abspath(os.path.dirname(__file__))
 def jira_query_pull(issues_url,session_cookie):
     headers = {
            'connection': "keep-alive",
@@ -90,9 +92,9 @@ def jira_query_update(username,password,field_id,ip,port,issue_id):
     curl_string = curl_string.replace('my_jira_ip',ip)
     curl_string = curl_string.replace('my_jira_port',str(port))
     curl_string = curl_string.replace('my_issue_id',issue_id)
-    os.system('sudo '+curl_string+' >curl_out')
+    os.system('sudo '+curl_string+' >'+root_dir()+'/curl_out')
     try:
-       return open('/home/curl_out','r').read().split('\n')[0].split()[1]
+       return open(root_dir()+'/curl_out','r').read().split('\n')[0].split()[1]
     except IndexError:
        return 404
     #filename_out = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(20))

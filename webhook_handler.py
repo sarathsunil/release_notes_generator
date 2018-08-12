@@ -164,7 +164,8 @@ def get_tasks():
             issue_id = ISSUE_ID
             release_note_name = "Release-Notes-"+jira_project_name+"-"+release_tag+".html"
             html_parse(root_dir()+'/templates/template.html',root_dir()+'/data/'+release_note_name,description,jira_project_name,release_tag)
-            return make_response(jsonify({'success':'release notes generated for Release Tag:'+release_tag}), 200)
+            content = open(root_dir()+'/data/'+release_note_name,'r').read()
+            return Response(content, mimetype="text/html")
         else:
             return make_response(jsonify({'error':'JIRA Login failed'}), 403)
     else:
