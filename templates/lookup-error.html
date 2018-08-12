@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Release Notes Lookup Page</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+    mydata = $('form').serialize()
+    $(function() {
+    $('#btnGenerate').click(function() { 
+        $.ajax({
+            url: '/commits/api/v1.0/releasenotes/',
+            data: $('form').serialize(),
+            type: 'GET',
+            dataType: 'html',
+            success: function(response) {
+                console.log(response);
+                window.location.href = "/commits/api/v1.0/releasenotes/?"+$('form').serialize();
+            },
+            error: function(error) {
+                console.log(error);
+                window.location.href = "/lookup_error";
+            }
+        });
+    });});
+    </script>
+    <link href="../static/generate.css" rel="stylesheet">
+   <style type="text/css">
+     body { background: lavender !important; }
+     div.header { background: lightsteelblue !important;}
+     div.jumbotron { background: lightsteelblue !important;}
+     nav {background:#AFCFEE !important;}
+   </style> 
+  </head>
+ 
+  <body>
+      {% with messages = get_flashed_messages() %}
+       {% if messages %}
+       <p>
+           Message was validated and flashed from view, check
+           list to see if successful:
+       </p>
+       <ul>
+           {% for message in messages %}
+              <li>{{ message }}</li>
+           {% endfor %}
+       </ul>
+       {% endif %}
+       {% endwith %}
+      <div class="container">
+      <div class="header" role="navigation">
+      <nav class="navbar navbar-default navbar-static-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Release Notes Portal</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/lookUp">Lookup</a></li>
+            <li><a href="/regenerate">Generate</a></li>
+            <li><a href="/getPdf">Get PDF</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+      <div class="jumbotron">
+        <h3>Error Occured!!! Please check project name and Release tag</h3>
+        <form class="form-signin">
+        <label for="project_name" class="sr-only">Project Name</label>
+        <input type="name" name="project_name" id="project_name" class="form-control" placeholder="Project Name" required autofocus>
+        <label for="release_tag" class="sr-only">Release Tag</label>
+        <input type="name" name="release_tag" id="release_tag" class="form-control" placeholder="Release Tag" required autofocus>
+        <button id="btnGenerate" class="btn btn-lg btn-primary btn-block" type="button" OnClientClick="return false">Lookup</button>
+      </form>
+      </div>
+      <div id="storage" style="display:none;"> </div>
+       
+ 
+      <footer class="footer">
+        <p>&copy; Ericsson North America 2018</p>
+      </footer>
+ 
+    </div>
+  </body>
+</html>

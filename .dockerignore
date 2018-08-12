@@ -1,0 +1,9 @@
+*.pyc
+#ignore data folder
+/data/*
+curl_out
+.gitignore
+*.pid
+*.swp
+*_bkp*
+

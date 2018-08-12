@@ -1,0 +1,2 @@
+JIRA_USERNAME="esahsul"
+JIRA_PASSWORD="K!m3erlite"
