@@ -64,9 +64,14 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li><a href="/lookUp">Lookup</a></li>
-            <li><a href="/regenerate">Generate</a></li>
-            <li class="active"><a href="/getPdf">Get PDF</a></li>
+            <ul class="nav navbar-nav">
+            <li><a href="/regenerate">Generate Single Release note</a></li>
+            <li><a href="/regenerateCombined">Generate Combined Release notes</a></li>
+            <li><a href="/lookUp">Lookup Single Release</a></li>
+            <li><a href="/lookUpCombined">Lookup Combined Release</a></li>
+            <li><a href="/getPdf">Get PDF Single Release</a></li>
+            <li><a href="/getPdfCombined">Get PDF Combined Release</a></li>
+          </ul>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -74,10 +79,12 @@
       <div class="jumbotron">
         <h2>Get PDF Release Notes</h2>
         <form class="form-signin">
-        <label for="project_name" class="sr-only">Project Name</label>
-        <input type="name" name="project_name" id="project_name" class="form-control" placeholder="Project Name" required autofocus>
+        <label for="project_name" class="sr-only">Project Key</label>
+        <input type="name" name="project_name" id="project_name" class="form-control" placeholder="Project Key" required autofocus>
         <label for="release_tag" class="sr-only">Release Tag</label>
         <input type="name" name="release_tag" id="release_tag" class="form-control" placeholder="Release Tag" required autofocus>
+        <label for="internal_flag" class="sr-only">Internal Flag</label>
+        <input type="name" name="internal_flag" id="internal_flag" class="form-control" placeholder="Internal/External" required autofocus>
         <button id="btnGenerate" class="btn btn-lg btn-primary btn-block" type="button" OnClientClick="return false">Get PDF</button>
       </form>
       </div>

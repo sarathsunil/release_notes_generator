@@ -1,2 +1,3 @@
 JIRA_USERNAME="esahsul"
 JIRA_PASSWORD="K!m3erlite"
+GITLAB_TOKEN='jvf_XerGPuvnB3DEzWbk'

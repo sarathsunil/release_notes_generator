@@ -10,28 +10,28 @@
     $(function() {
     $('#btnGenerate').click(function() { 
         $.ajax({
-            url: '/commits/api/v1.0/releasenotes/',
+            url: '../commits/api/v1.0/releasenotes/',
             data: $('form').serialize(),
             type: 'GET',
             dataType: 'html',
             success: function(response) {
                 console.log(response);
-                window.location.href = "/commits/api/v1.0/releasenotes/?"+$('form').serialize();
+                window.location.href = "../commits/api/v1.0/releasenotes/?"+$('form').serialize();
             },
             error: function(error) {
                 console.log(error);
-                window.location.href = "/lookup_error";
+                window.location.href = "../lookup_error";
             }
         });
     });});
     </script>
     <link href="../static/generate.css" rel="stylesheet">
    <style type="text/css">
-     body { background: lavender !important; }
-     div.header { background: lightsteelblue !important;}
-     div.jumbotron { background: lightsteelblue !important; background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Ericsson_logo.svg/2000px-Ericsson_logo.svg.png') !important; background-size: contain !important; background-repeat: no-repeat !important; background-position: center center !important;}
-     nav {background:#AFCFEE !important;}
-   </style> 
+   body { background: lavender !important; }
+   div.header { background: lightsteelblue !important;}
+   div.jumbotron { background: lightsteelblue !important; background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Ericsson_logo.svg/2000px-Ericsson_logo.svg.png') !important; background-size: contain !important; background-repeat: no-repeat !important; background-position: center center !important;}
+   nav {background:#AFCFEE !important;}
+  </style>  
   </head>
  
   <body>
@@ -63,20 +63,25 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="/lookUp">Lookup</a></li>
-            <li><a href="/regenerate">Generate</a></li>
-            <li><a href="/getPdf">Get PDF</a></li>
+            <li><a href="/regenerate">Generate Single Release note</a></li>
+            <li><a href="/regenerateCombined">Generate Combined Release notes</a></li>
+            <li><a href="/lookUp">Lookup Single Release</a></li>
+            <li><a href="/lookUpCombined">Lookup Combined Release</a></li>
+            <li><a href="/getPdf">Get PDF Single Release</a></li>
+            <li><a href="/getPdfCombined">Get PDF Combined Release</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
     </nav>
       <div class="jumbotron">
-        <h3>Error Occured!!! Please check project name and Release tag</h3>
+        <h2>Error!! Please verify Project Key, Release Label and Internal Flags</h2>
         <form class="form-signin">
         <label for="project_name" class="sr-only">Project Name</label>
-        <input type="name" name="project_name" id="project_name" class="form-control" placeholder="Project Name" required autofocus>
+        <input type="name" name="project_name" id="project_name" class="form-control" placeholder="Project Key" required autofocus>
         <label for="release_tag" class="sr-only">Release Tag</label>
         <input type="name" name="release_tag" id="release_tag" class="form-control" placeholder="Release Tag" required autofocus>
+        <label for="release_tag" class="sr-only">Internal Flag</label>
+        <input type="name" name="internal_flag" id="internal_flag" class="form-control" placeholder="Internal/External" required autofocus>
         <button id="btnGenerate" class="btn btn-lg btn-primary btn-block" type="button" OnClientClick="return false">Lookup</button>
       </form>
       </div>

@@ -10,7 +10,7 @@
   <style type="text/css">
      body { background: lavender !important; }
      div.header { background: lightsteelblue !important;}
-     div.jumbotron { background: lightsteelblue !important; background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Ericsson_logo.svg/2000px-Ericsson_logo.svg.png') !important; background-size: contain !important; background-repeat: no-repeat !important; background-position: center center !important;}      
+     div.jumbotron { background: lightsteelblue !important; background-size: contain !important; background-repeat: no-repeat !important; background-position: center center !important;}      
      nav {background:#AFCFEE !important;}
      
   </style> 
@@ -33,9 +33,12 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li><a href="/lookUp">Lookup</a></li>
-            <li><a href="/regenerate">Generate</a></li>
-            <li><a href="/getPdf">Get PDF</a></li>
+            <li><a href="/regenerate">Generate Single Release note</a></li>
+            <li><a href="/regenerateCombined">Generate Combined Release notes</a></li>
+            <li><a href="/lookUp">Lookup Single Release</a></li>
+            <li><a href="/lookUpCombined">Lookup Combined Release</a></li>
+            <li><a href="/getPdf">Get PDF Single Release</a></li>
+            <li><a href="/getPdfCombined">Get PDF Combined Release</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -44,9 +47,12 @@
         <div class="jumbotron">
             <h2>Release Notes Home</h2>
             <p class="lead"></p>
-            <p><a class="btn btn-lg btn-success" href="regenerate" role="button">Regenerate Release Note</a><p><a class="btn btn-lg btn-success" href="lookUp" role="button">Look up Release Notes</a></p>
-            <p><a class="btn btn-lg btn-success" href="getPdf" role="button">Get Release Note in PDF</a>
-            </p>
+            <p><a class="btn btn-lg btn-success" href="regenerate" role="button">Generate Single Release Note</a></p>
+            <p><a class="btn btn-lg btn-success" href="regenerateCombined" role="button">Generate Combined Release Note</a></p>
+            <p><a class="btn btn-lg btn-success" href="lookUp" role="button">Look up Single Release Notes</a></p>
+            <p><a class="btn btn-lg btn-success" href="lookUpCombined" role="button">Look up Combined Release Notes</a></p>
+            <p><a class="btn btn-lg btn-success" href="getPdf" role="button">Get Single Release Note in PDF</a></p>
+            <p><a class="btn btn-lg btn-success" href="getPdfCombined" role="button">Get Combined Release Note in PDF</a></p>
         </div>
  
         <div class="row marketing">

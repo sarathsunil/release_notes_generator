@@ -10,17 +10,17 @@
     $(function() {
     $('#btnGenerate').click(function() { 
         $.ajax({
-            url: 'generate/generate_notes/',
+            url: 'generate/combine_notes/',
             data: $('form').serialize(),
             type: 'GET',
             dataType: 'html',
             success: function(response) {
                 console.log(response);
-                window.location.href = "generate/generate_notes/?"+$('form').serialize();
+                window.location.href = "generate/combine_notes/?"+$('form').serialize();
             },
             error: function(error) {
                 console.log(error);
-                window.location.href = "generate_error";
+                window.location.href = "generate_combined_error";
             }
         });
     });});
@@ -80,9 +80,11 @@
         <form class="form-signin">
         <label for="project_id" class="sr-only">Project Key</label>
         <input type="name" name="project_id" id="project_id" class="form-control" placeholder="Project Key" required autofocus>
-        <label for="release_tag" class="sr-only">Release Tag</label>
-        <input type="name" name="release_tag" id="release_tag" class="form-control" placeholder="Release Tag" required autofocus>
-        <label for="internal_flag" class="sr-only">Release Tag</label>
+        <label for="from_release_tag" class="sr-only">From Release </label>
+        <input type="name" name="from_release_tag" id="from_release_tag" class="form-control" placeholder="From Release" required autofocus>
+        <label for="to_release_tag" class="sr-only">To Release </label>
+        <input type="name" name="to_release_tag" id="to_release_tag" class="form-control" placeholder="To Release" required autofocus>
+        <label for="internal_flag" class="sr-only">Internal Flag</label>
         <input type="name" name="internal_flag" id="internal_flag" class="form-control" placeholder="Internal/External" required autofocus>
         <button id="btnGenerate" class="btn btn-lg btn-primary btn-block" type="button" OnClientClick="return false">Generate</button>
       </form>

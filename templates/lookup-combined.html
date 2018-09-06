@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Release Notes Regenerate Page</title>
+    <title>Release Notes Lookup Page</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <link rel="shortcut icon" href="favicon.ico" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script>
+    mydata = $('form').serialize()
     $(function() {
     $('#btnGenerate').click(function() { 
         $.ajax({
-            url: 'generate/generate_notes/',
+            url: 'commits/api/v1.0/releasenotes-combined/',
             data: $('form').serialize(),
             type: 'GET',
             dataType: 'html',
             success: function(response) {
                 console.log(response);
-                window.location.href = "generate/generate_notes/?"+$('form').serialize();
+                window.location.href = "commits/api/v1.0/releasenotes-combined/?"+$('form').serialize();
             },
             error: function(error) {
                 console.log(error);
-                window.location.href = "generate_error";
+                window.location.href = "lookup_combined_error";
             }
         });
     });});
@@ -29,11 +29,9 @@
    <style type="text/css">
    body { background: lavender !important; }
    div.header { background: lightsteelblue !important;}
-   div.jumbotron { background: lightsteelblue !important; background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Ericsson_logo.svg/2000px-Ericsson_logo.svg.png') !important; background-size: contain !important; background-repeat: no-repeat !important; background-position: center center !important;} 
+   div.jumbotron { background: lightsteelblue !important; background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Ericsson_logo.svg/2000px-Ericsson_logo.svg.png') !important; background-size: contain !important; background-repeat: no-repeat !important; background-position: center center !important;}
    nav {background:#AFCFEE !important;}
-
-   </style>
-    
+  </style>  
   </head>
  
   <body>
@@ -50,8 +48,8 @@
        </ul>
        {% endif %}
        {% endwith %}
-    <div class="container">
-     <div class="header" role="navigation">
+      <div class="container">
+      <div class="header" role="navigation">
       <nav class="navbar navbar-default navbar-static-top">
       <div class="container">
         <div class="navbar-header">
@@ -76,18 +74,20 @@
       </div>
     </nav>
       <div class="jumbotron">
-        <h2>Regenerate Release Notes</h2>
+        <h2>Lookup Release Notes</h2>
         <form class="form-signin">
-        <label for="project_id" class="sr-only">Project Key</label>
-        <input type="name" name="project_id" id="project_id" class="form-control" placeholder="Project Key" required autofocus>
-        <label for="release_tag" class="sr-only">Release Tag</label>
-        <input type="name" name="release_tag" id="release_tag" class="form-control" placeholder="Release Tag" required autofocus>
-        <label for="internal_flag" class="sr-only">Release Tag</label>
+        <label for="project_name" class="sr-only">Project Key</label>
+        <input type="name" name="project_name" id="project_name" class="form-control" placeholder="Project Key" required autofocus>
+        <label for="from_release_tag" class="sr-only">From Release Tag</label>
+        <input type="name" name="from_release_tag" id="from_release_tag" class="form-control" placeholder="From Release Tag" required autofocus>
+        <label for="to_release_tag" class="sr-only">To Release Tag</label>
+        <input type="name" name="to_release_tag" id="to_release_tag" class="form-control" placeholder="To Release Tag" required autofocus>
+        <label for="release_tag" class="sr-only">Internal Flag</label>
         <input type="name" name="internal_flag" id="internal_flag" class="form-control" placeholder="Internal/External" required autofocus>
-        <button id="btnGenerate" class="btn btn-lg btn-primary btn-block" type="button" OnClientClick="return false">Generate</button>
+        <button id="btnGenerate" class="btn btn-lg btn-primary btn-block" type="button" OnClientClick="return false">Lookup</button>
       </form>
       </div>
- 
+      <div id="storage" style="display:none;"> </div>
        
  
       <footer class="footer">
