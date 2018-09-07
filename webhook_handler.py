@@ -14,7 +14,7 @@ import glob
 import requests
 from settings.credentials import JIRA_USERNAME as JIRA_USERNAME,JIRA_PASSWORD as JIRA_PASSWORD
 from settings.credentials import GITLAB_TOKEN as GITLAB_ACCESS_TOKEN
-from settings.urls_all import JIRA as JIRA_IP, GITLAB as GITLAB_IP
+from settings.urls_all import JIRA as JIRA_IP, GITLAB as GITLAB_IP, PROTOCOL as PROTOCOL
 from settings.ports_all import JIRA as JIRA_PORT, GITLAB as GITLAB_PORT
 from settings.jira_fields import customer_description as CUSTOMER_DESCRIPTION
 from settings.jira_fields import release_tag as RELEASE_TAG
@@ -35,7 +35,7 @@ def root_dir():
 
 def get_latest_releasenotes():
     try:
-        
+
         directory = root_dir()+'/data/'
         files = os.listdir(root_dir()+'/data/')
         name_n_timestamp = dict([(x, os.stat(directory+x).st_mtime) for x in files])
@@ -115,7 +115,7 @@ def get_pdf_combined_error():
 @application.route('/todo/api/v1.0/releasenotes/updateAlm/',methods=['POST'])
 def update_alm():
     data = {}
-    
+
     #GET REQUEST DATA
     if request.headers['Content-Type'] == 'application/json':
         data = json.loads(request.data)
@@ -124,8 +124,8 @@ def update_alm():
     updated_issues=[]
     project_id = data['project_id']
     ref_name = data['ref_name']
-    GITLAB_URL = 'http://'+GITLAB_IP+':'+str(GITLAB_PORT)
-    JIRA_AUTHORIZATION_URL = "http://"+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
+    GITLAB_URL = PROTOCOL+GITLAB_IP+':'+str(GITLAB_PORT)
+    JIRA_AUTHORIZATION_URL = PROTOCOL+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
     commit_messages = get_commit_messages(project_id,ref_name,GITLAB_ACCESS_TOKEN,GITLAB_URL)
     logger.info(str(commit_messages))
     jsessionid = get_session_cookie(JIRA_USERNAME,JIRA_PASSWORD,JIRA_AUTHORIZATION_URL)
@@ -142,17 +142,17 @@ def update_alm():
         return make_response(jsonify({'success': 'FOLLOWING TRACKERS IDs HAVE BEEN UPDATED IN ALM','trackers':updated_issues}), 200)
     else:
         return make_response(jsonify({'failed': 'NO TRACKER IDs FOUND IN COMMIT MESSAGES','trackers':updated_issues}),404)
-    
+
 #USER FACING SERVICE TO GENERATE RELEASE NOTES
 @application.route('/generate/generate_notes/',methods=['GET'])
 def generate_notes():
-    JIRA_AUTHORIZATION_URL = "http://"+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
-   
+    JIRA_AUTHORIZATION_URL = PROTOCOL+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
+
     # GET REQUEST DATA
     project_id = request.args.get('project_id')
     release_tag = request.args.get('release_tag')
     internal_flag = request.args.get('internal_flag')
-    
+
     #GET JIRA AUTHORIZATION SESSION COOKIE
     jsessionid = get_session_cookie(JIRA_USERNAME,JIRA_PASSWORD,JIRA_AUTHORIZATION_URL)
     if jsessionid['values'] == True:
@@ -160,14 +160,14 @@ def generate_notes():
     else:
           print jsessionid['values']
           return make_response(jsonify({'error': 'JIRA AUTHORIZATION FAILED'}), 404)
-    
+
     #CHECK AND VALIDATE INPUTS - INTERNAL/EXTERNAL
     if internal_flag not in ["Internal","internal","External","external","INTERNAL","EXTERNAL"]:
           return make_response(jsonify({'error': 'INVALID INTERNAL FLAG'}), 404)
 
     #GET JIRA FIELD ID FOR DESCRIPTION FIELD - THIS FIELD IS CONFIGURABLE
     customer_description_id = jira_field_id_mapping(CUSTOMER_DESCRIPTION,JIRA_IP,JIRA_PORT,jsessionid)
-    
+
     #GET VERSIONS AND CHECK IF THIS VERSION EXISTS
 
     if release_tag not in jira_get_versions_all(JIRA_IP,JIRA_PORT,project_id,jsessionid):
@@ -175,13 +175,13 @@ def generate_notes():
 
     #REFER functions/jira_query.py:jira_release_tag_look_up
     description = jira_release_tag_look_up(JIRA_IP,JIRA_PORT,jsessionid,project_id,release_tag,customer_description_id,internal_flag)
-    
+
     #GET REQUIRED DATA FROM FUNCTION RESPONSE
     closed_issues = description["BUG"]["BUGS"]
     open_issues = description["BUG_UNDONE"]["BUGS_UNDONE"]
     cr_delivered = description["INITIATIVE"]["INITIATIVES"]+description["EPIC"]["EPICS"]
     merged_issues = description["INITIATIVE"]["MERGED_ISSUE"]+description["EPIC"]["MERGED_ISSUE"]+description["STORY"]["MERGED_ISSUE"]+description["TASK"]["MERGED_ISSUE"]+description["BUG"]["MERGED_ISSUE"]
-    
+
     output = render_template('template.html', epics=cr_delivered,open_defects=open_issues,closed_defects=closed_issues,merged_issues=merged_issues)
     release_note_name = 'Release_Notes_'+project_id+'_'+release_tag+'_'+internal_flag+'.html'
 
@@ -193,17 +193,17 @@ def generate_notes():
     #RETURN FILE CONTENT
     content = get_releasenotes(release_note_name)
     return Response(content, mimetype="text/html")
-
+#SERVICE TO COMBINE RELEASE NOTES
 @application.route('/generate/combine_notes/',methods=['GET'])
 def combine_notes():
-    JIRA_AUTHORIZATION_URL = "http://"+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
-    
+    JIRA_AUTHORIZATION_URL = PROTOCOL+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
+
     #GET REQUEST DATA
     project_id = request.args.get('project_id')
     from_release_tag = request.args.get('from_release_tag')
     to_release_tag = request.args.get('to_release_tag')
     internal_flag = request.args.get('internal_flag')
-    
+
     #GET JIRA AUTHORIZATION SESSION COOKIE
     jsessionid = get_session_cookie(JIRA_USERNAME,JIRA_PASSWORD,JIRA_AUTHORIZATION_URL)
     if jsessionid['values'] == True:
@@ -217,17 +217,17 @@ def combine_notes():
        return make_response(jsonify({"errorMessages":["No project could be found with key and Release specified."],"errors":{}}),400)
     if to_release_tag not in jira_get_versions_all(JIRA_IP,JIRA_PORT,project_id,jsessionid):
        return make_response(jsonify({"errorMessages":["No project could be found with key and Release specified."],"errors":{}}),400)
-     
+
     #GET FIELD ID FOR DESCRIPTION FIELD
     customer_description_id = jira_field_id_mapping(CUSTOMER_DESCRIPTION,JIRA_IP,JIRA_PORT,jsessionid)
 
     #GET ALL RELEASES FOR THE PROJECT STARTING AFTER START RELEASE:START DATE AND ENDING ON OR BEFORE END RELEASE:START DATE
     #REFER TO functions/jira_query.py:jira_get_versions
     release_tags = jira_get_versions(JIRA_IP,JIRA_PORT,project_id,from_release_tag,to_release_tag,jsessionid)
-    
+
     if release_tags == []:
        return make_response(jsonify({'error':'NO RELEASES FOUND BETWEEN START AND END RELEASES SPECIFIED'}),400)
-    
+
     closed_issues = []
     open_issues = []
     cr_delivered = []
@@ -242,7 +242,7 @@ def combine_notes():
        merged_issues += description["INITIATIVE"]["MERGED_ISSUE"]+description["EPIC"]["MERGED_ISSUE"]+description["STORY"]["MERGED_ISSUE"]+description["TASK"]["MERGED_ISSUE"]+description["BUG"]["MERGED_ISSUE"]
     open_issue_ids = []
 
-    #REMOVE DUPLICATES 
+    #REMOVE DUPLICATES
     unique_open_issues = []
     for item in open_issues:
         if item['issue_id'] not in open_issue_ids:
@@ -254,18 +254,18 @@ def combine_notes():
     logger.info("OPEN ISSUES : "+str(open_issues))
     logger.info("CR DELIVERED : "+str(cr_delivered))
     logger.info("MERGED ISSUES : "+str(merged_issues))
-    
+
     #WRITE TO HTML FILE
     output = render_template('template.html', epics=cr_delivered,open_defects=unique_open_issues,closed_defects=closed_issues,merged_issues=merged_issues)
     release_note_name = 'Release_Notes_'+project_id+'_'+from_release_tag+'_'+to_release_tag+'_'+internal_flag+'.html'
     writer = codecs.open(root_dir()+'/data/'+release_note_name,'w','utf-8')
     writer.write(output)
     writer.close()
-    
+
     #RETURN FILE CONTENT
     content = get_releasenotes(release_note_name)
     return Response(content, mimetype="text/html")
-       
+
 @application.route('/generate_error/', methods=['GET'])
 def generate_error():
     return render_template('generate-error.html')
@@ -287,7 +287,7 @@ def get_tasks():
     #writer.write(tasks)
     #print request.headers
     data = {}
-    if request.headers['Content-Type'] == 'application/json':    
+    if request.headers['Content-Type'] == 'application/json':
         print(request.data)
         data = json.loads(request.data)
     else:
@@ -295,9 +295,9 @@ def get_tasks():
     if 'commit_message' in data.keys():
         logger.info("COMMIT MESSAGE:"+"\n"+data['commit_message'])
         ISSUE_ID = data['commit_message'].split(":")[0]
-        JIRA_AUTHORIZATION_URL = "http://"+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
-        JIRA_ISSUES_URL = "http://"+JIRA_IP+":"+str(JIRA_PORT)+"/rest/api/latest/issue/"+ISSUE_ID+"?expand=names"
-        JIRA_ISSUES_URL_BASE = "http://"+JIRA_IP+":"+str(JIRA_PORT)+"/rest/api/2/issue/"+ISSUE_ID+"/"
+        JIRA_AUTHORIZATION_URL = PROTOCOL+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
+        JIRA_ISSUES_URL = PROTOCOL+JIRA_IP+":"+str(JIRA_PORT)+"/rest/api/latest/issue/"+ISSUE_ID+"?expand=names"
+        JIRA_ISSUES_URL_BASE = PROTOCOL+JIRA_IP+":"+str(JIRA_PORT)+"/rest/api/2/issue/"+ISSUE_ID+"/"
         jsessionid = get_session_cookie(JIRA_USERNAME,JIRA_PASSWORD,JIRA_AUTHORIZATION_URL)
         logger.info("SESSION COOKIE :"+str(jsessionid))
         if jsessionid["values"] != False:
@@ -345,7 +345,7 @@ def get_tasks():
 
 @application.route('/commits/api/v1.0/releasenotes/', methods=['GET','POST'])
 def release_lookup():
-  JIRA_AUTHORIZATION_URL = "http://"+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
+  JIRA_AUTHORIZATION_URL = PROTOCOL+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
   jsessionid = get_session_cookie(JIRA_USERNAME,JIRA_PASSWORD,JIRA_AUTHORIZATION_URL)
   logger.info("SESSION COOKIE :"+str(jsessionid))
   if jsessionid["values"] != False:
@@ -366,7 +366,7 @@ def release_lookup():
     logger.info("PROJECT NAME FOR LOOKUP : "+request.form['project_name'])
     logger.info("RELEASE TAG ID FOR LOOKUP : "+request.form['release_tag'])
     logger.info("RELEASE NOTES FILENAME : "+root_dir()+"/data/Release_Notes_"+request.form['project_name']+"_"+request.form['release_tag']+".html")
-    
+
     if os.path.exists(root_dir()+'/data/Release_Notes_'+request.form['project_name']+'_'+request.form['release_tag']+'_'+request.form['internal_flag']+'.html'):
        content = open(root_dir()+'/data/Release_Notes_'+request.form['project_name']+'_'+request.form['release_tag']+'.html','r').read()
        return Response(content, mimetype="text/html")
@@ -374,7 +374,7 @@ def release_lookup():
         return make_response(jsonify({'error':'Not Found'}), 400)
 @application.route('/commits/api/v1.0/releasenotes-combined/', methods=['GET','POST'])
 def release_lookup_combined():
-  JIRA_AUTHORIZATION_URL = "http://"+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
+  JIRA_AUTHORIZATION_URL = PROTOCOL+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
   jsessionid = get_session_cookie(JIRA_USERNAME,JIRA_PASSWORD,JIRA_AUTHORIZATION_URL)
   logger.info("SESSION COOKIE :"+str(jsessionid))
   if jsessionid["values"] != False:
@@ -408,7 +408,7 @@ def release_lookup_combined():
         return make_response(jsonify({'error':'Not Found'}), 400)
 @application.route('/commits/api/v1.0/releasenotes/pdf/', methods=['GET'])
 def release_pdf_lookup():
-  JIRA_AUTHORIZATION_URL = "http://"+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
+  JIRA_AUTHORIZATION_URL = PROTOCOL+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
   jsessionid = get_session_cookie(JIRA_USERNAME,JIRA_PASSWORD,JIRA_AUTHORIZATION_URL)
   logger.info("SESSION COOKIE :"+str(jsessionid))
   if jsessionid["values"] != False:
@@ -447,7 +447,7 @@ def release_pdf_lookup():
 
 @application.route('/commits/api/v1.0/releasenotes/pdf_combined/', methods=['GET'])
 def release_combined_pdf_lookup():
-  JIRA_AUTHORIZATION_URL = "http://"+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
+  JIRA_AUTHORIZATION_URL = PROTOCOL+JIRA_IP+":"+str(JIRA_PORT)+"/rest/auth/1/session/"
   jsessionid = get_session_cookie(JIRA_USERNAME,JIRA_PASSWORD,JIRA_AUTHORIZATION_URL)
   logger.info("SESSION COOKIE :"+str(jsessionid))
   if jsessionid["values"] != False:
@@ -469,7 +469,7 @@ def release_combined_pdf_lookup():
     #project_name = jira_get_project_name_by_key(JIRA_IP,JIRA_PORT,project_name,jsessionid)
     html_path = root_dir()+"/data/Release_Notes_"+str(project_name)+"_"+str(from_release_tag)+"_"+str(to_release_tag)+"_"+str(internal_flag)+".html"
     pdf_path = root_dir()+'/pdf_reports/Release_Notes_'+str(project_name)+'_'+str(from_release_tag)+'_'+str(to_release_tag)+'_'+str(internal_flag)+'.pdf'
-    
+
     if os.path.exists(html_path):
        make_pdf_report(html_path,pdf_path)
     else:
@@ -489,3 +489,4 @@ if __name__ == '__main__':
     application.jinja_env.auto_reload = True
     application.config['TEMPLATES_AUTO_RELOAD'] = True
     application.run(debug=True,extra_files = [root_dir()+'/data/Release-Notes-*'])
+

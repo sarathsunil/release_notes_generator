@@ -7,6 +7,8 @@ import string
 import urllib
 import logging
 from datetime import datetime
+sys.path.insert(0, '/webhook_handler/settings')
+from urls_all import PROTOCOL
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 def root_dir():  # pragma: no cover
@@ -37,7 +39,7 @@ def jira_field_id_mapping(field_name,ip,port,session_cookie):
            'content-type': 'application/json',
            'cookie': 'JSESSIONID='+session_cookie
            }
-    url = "http://"+(ip)+":"+(str(port))+"/rest/api/2/field"
+    url = PROTOCOL+(ip)+":"+(str(port))+"/rest/api/2/field"
     response = requests.get(url,headers=headers,verify=False).json()
     field_id = list(filter(lambda x: x['name']==field_name,response))[0]['id']
     return field_id
@@ -51,7 +53,7 @@ def jira_get_project_name_by_key(ip,port,project_key,session_cookie):
            'content-type': 'application/json',
            'cookie': 'JSESSIONID='+session_cookie
            }
-    url = "http://"+(ip)+":"+(str(port))+"/rest/api/2/project/"+project_key
+    url = PROTOCOL+(ip)+":"+(str(port))+"/rest/api/2/project/"+project_key
     response = requests.get(url,headers=headers,verify=False).json()
     return response['name']
 
@@ -64,7 +66,7 @@ def jira_get_versions_all(IP,PORT,project_id,session_cookie):
            'content-type': 'application/json',
            'cookie': 'JSESSIONID='+session_cookie
            }
-    url = 'http://'+IP+':'+str(PORT)+'/rest/api/2/project/'+project_id+'/versions/'
+    url = PROTOCOL+IP+':'+str(PORT)+'/rest/api/2/project/'+project_id+'/versions/'
     response = requests.get(url,headers=headers,verify=False).json()
     if type(response) is dict and "errorMessages" in response.keys():
        return []
@@ -83,9 +85,9 @@ def jira_get_versions(IP,PORT,project_id,start_release,end_release,session_cooki
            'content-type': 'application/json',
            'cookie': 'JSESSIONID='+session_cookie
            }
-    url = 'http://'+IP+':'+str(PORT)+'/rest/api/2/project/'+project_id+'/versions/'
+    url = PROTOCOL+IP+':'+str(PORT)+'/rest/api/2/project/'+project_id+'/versions/'
     response = requests.get(url,headers=headers,verify=False).json()
-    
+
     #SORT BASED ON START DATE OF THE RELEASE
     res = []
     for item in response:
@@ -94,7 +96,7 @@ def jira_get_versions(IP,PORT,project_id,start_release,end_release,session_cooki
         res.append(item)
     res = sorted(res, key= lambda k: k['startDate1'])
     res1 = res
-    
+
     #REMOVE ALL RELEASES THAT COME BEFORE AND INCLUDING START RELEASE: res1
     for release in res:
         if release['name']!= start_release:
@@ -103,7 +105,7 @@ def jira_get_versions(IP,PORT,project_id,start_release,end_release,session_cooki
            res1.remove(release)
            break
     res2 = []
-    
+
     #ADD RELEASES TO res2 UNTIL END RELEASE IS ALSO ADDED
     for release in res1:
         if release['name']!=end_release:
@@ -111,7 +113,7 @@ def jira_get_versions(IP,PORT,project_id,start_release,end_release,session_cooki
         if release['name'] == end_release:
            res2.append(release)
            break
-    
+
     #RETURN ONLY RELEASE NAMES
     return [item['name'] for item in res2 if 'name' in item.keys()]
 
@@ -124,14 +126,14 @@ def check_undone_epic_intiative(issue_id,project_name,ip,port,session_cookie):
            'content-type': 'application/json',
            'cookie': 'JSESSIONID='+session_cookie
            }
-    issue_type_url = 'http://'+ip+':'+str(port)+'/rest/api/2/issue/'+issue_id+'?fields=issuetype'
+    issue_type_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/issue/'+issue_id+'?fields=issuetype'
     issue_type = requests.get(issue_type_url,headers=headers,verify=False).json()['fields']['issuetype']['name']
     if issue_type=='Task' or issue_type=='Bug':
-       undone_epic_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20No%20AND%20project%20%3D%20'+project_name+'%20AND%20issue%20in%20linkedIssues(%22'+issue_id+'%22)%20AND%20issuetype%20!%3D%20Initiatives%20AND%20issuetype%20!%3D%20Epic%20AND%20issuetype%20!%3D%20Story'
+       undone_epic_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20No%20AND%20project%20%3D%20'+project_name+'%20AND%20issue%20in%20linkedIssues(%22'+issue_id+'%22)%20AND%20issuetype%20!%3D%20Initiatives%20AND%20issuetype%20!%3D%20Epic%20AND%20issuetype%20!%3D%20Story'
     if issue_type=='Story':
-       undone_epic_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20No%20AND%20project%20%3D%20'+project_name+'%20AND%20issue%20in%20linkedIssues(%22'+issue_id+'%22)%20AND%20issuetype%20!%3D%20Initiatives%20AND%20issuetype%20!%3D%20Epic'
+       undone_epic_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20No%20AND%20project%20%3D%20'+project_name+'%20AND%20issue%20in%20linkedIssues(%22'+issue_id+'%22)%20AND%20issuetype%20!%3D%20Initiatives%20AND%20issuetype%20!%3D%20Epic'
     if issue_type=='Epic':
-       undone_epic_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20No%20AND%20project%20%3D%20'+project_name+'%20AND%20issue%20in%20linkedIssues(%22'+issue_id+'%22)%20AND%20issuetype%20!%3D%20Initiatives'
+       undone_epic_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20No%20AND%20project%20%3D%20'+project_name+'%20AND%20issue%20in%20linkedIssues(%22'+issue_id+'%22)%20AND%20issuetype%20!%3D%20Initiatives'
     undone_epic_response = requests.get(undone_epic_url,headers=headers,verify=False).json()
     if len(undone_epic_response['issues'])!=0:
        return False
@@ -163,9 +165,9 @@ def parse_epic_response(epic_response,ip,port,session_cookie,release_tag,project
            'cookie': 'JSESSIONID='+session_cookie
            }
     for issues in epic_response['issues']:
-         story_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Story%20AND%20%22Epic%20Link%22%20%3D%20'+issues['id']
-         task_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Task%20AND%20%22Epic%20Link%22%20%3D%20'+issues['id']
-         bug_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Bug%20AND%20%22Epic%20Link%22%20%3D%20'+issues['id']
+         story_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Story%20AND%20%22Epic%20Link%22%20%3D%20'+issues['id']
+         task_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Task%20AND%20%22Epic%20Link%22%20%3D%20'+issues['id']
+         bug_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Bug%20AND%20%22Epic%20Link%22%20%3D%20'+issues['id']
          story_response = requests.get(story_url,headers=headers,verify=False).json()
          task_response = requests.get(task_url,headers=headers,verify=False).json()
          bug_response = requests.get(task_url,headers=headers,verify=False).json()
@@ -222,11 +224,11 @@ def parse_initiative_response(initiative_response,ip,port,session_cookie,release
            'cookie': 'JSESSIONID='+session_cookie
            }
     for issues in initiative_response['issues']:
-         story_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Story%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
-         task_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Task%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
-         bug_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Bug%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
-         epic_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Epic%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
-         epic_response = requests.get(epic_url,headers=headers,verify=False).json() 
+         story_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Story%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
+         task_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Task%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
+         bug_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Bug%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
+         epic_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Epic%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
+         epic_response = requests.get(epic_url,headers=headers,verify=False).json()
          story_response = requests.get(story_url,headers=headers,verify=False).json()
          task_response = requests.get(task_url,headers=headers,verify=False).json()
          bug_response = requests.get(task_url,headers=headers,verify=False).json()
@@ -283,12 +285,12 @@ def parse_story_response(story_response,ip,port,session_cookie,release_tag,proje
            'cookie': 'JSESSIONID='+session_cookie
            }
     for issues in story_response['issues']:
-         task_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Task%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
-         bug_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Bug%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
+         task_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Task%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
+         bug_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Bug%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
          task_response = requests.get(task_url,headers=headers,verify=False).json()
          bug_response = requests.get(task_url,headers=headers,verify=False).json()
          responses = task_response['issues']+bug_response['issues']+story_response['issues']
-         
+
          #CHECK IF ISSUE IS MERGED - ADD TO MERGED ISSUES INSTEAD
          for item in responses:
              if(("Merged" in item['fields']['labels']) and (item['key'] not in merged_issue_id)):
@@ -315,7 +317,7 @@ def parse_task_response(task_response,ip,port,session_cookie,release_tag,project
     merged_description=[]
     task_issue_id=[]
     bug_issue_id=[]
-    merged_issue_id=[] 
+    merged_issue_id=[]
     for task in task_response['issues']:
         retain_task = {'issue_id':task['key'],'summary':task['fields']['summary'],'description':task['fields']['description'],'link':None,'label':task['fields']['labels']}
         task_issue_id.append(task['key'])
@@ -328,7 +330,7 @@ def parse_task_response(task_response,ip,port,session_cookie,release_tag,project
            'cookie': 'JSESSIONID='+session_cookie
            }
     for issues in task_response['issues']:
-        bug_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Bug%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
+        bug_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Bug%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
         bug_response = requests.get(bug_url,headers=headers,verify=False).json()
         responses = task_response['issues']+bug_response['issues']
 
@@ -366,10 +368,10 @@ def parse_bug_response(bug_response,ip,port,session_cookie,release_tag,project_n
            'cookie': 'JSESSIONID='+session_cookie
            }
     for issues in bug_response['issues']:
-        task_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Task%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
+        task_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Task%20AND%20issue%20in%20linkedIssues(%22'+issues['id']+'%22)'
         task_response = requests.get(task_url,headers=headers,verify=False).json()
         responses = task_response['issues']+bug_response['issues']
-        
+
         #CHECK IF ISSUE IS MERGED - ADD TO MERGED ISSUES INSTEAD
         for item in responses:
              if(("Merged" in item['fields']['labels']) and (item['key'] not in merged_issue_id)):
@@ -384,7 +386,7 @@ def parse_bug_response(bug_response,ip,port,session_cookie,release_tag,project_n
     bug_description = [item for item in bug_description if item['issue_id'] not in merged_issue_id]
     return {"TASKS":task_description,"BUGS":bug_description,"MERGED_ISSUE":merged_description,"ISSUE_IDS":task_issue_id+bug_issue_id}
 
-#RETURNS ALL BUGS IN UNFINISHED STATE 
+#RETURNS ALL BUGS IN UNFINISHED STATE
 def parse_bug_undone_response(bug_undone_response,ip,port,session_cookie,release_tag,project_name):
     bug_undone_copy = bug_undone_response
     task_description=[]
@@ -394,14 +396,14 @@ def parse_bug_undone_response(bug_undone_response,ip,port,session_cookie,release
     bug_issue_id = []
     merged_issue_id = []
     for bug in bug_undone_copy['issues']:
-        
+
         #CHECK IF ISSUE IS MERGED - ADD TO MERGED ISSUES INSTEAD OF BUGS
         if(("Merged" in bug['fields']['labels']) and (bug['key'] not in merged_issue_id)):
             #bug_undone_response['issues'].remove(bug)
             retain_merged = {'issue_id':bug['key'],'summary':bug['fields']['summary'],'description':bug['fields']['description'],'link':bug['id'],'label':bug['fields']['labels']}
             merged_issue_id.append(bug['key'])
             merged_description.append(retain_merged)
-        
+
         retain_bug = {'issue_id':bug['key'],'summary':bug['fields']['summary'],'description':bug['fields']['description'],'link':bug['id'],'label':bug['fields']['labels']}
         bug_issue_id.append(bug['key'])
         bug_description.append(retain_bug)
@@ -425,13 +427,13 @@ def jira_release_tag_look_up(ip,port,session_cookie,project_name,release_tag,cus
            'cookie': 'JSESSIONID='+session_cookie
            }
      #JQL URLS FOR EACH TYPE OF ISSUE
-     epic_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Epic'
-     initiative_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Initiatives'
-     story_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Story'
-     task_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Task'
-     bug_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Bug'
-     bug_undone_url = 'http://'+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20No%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Bug'
-     
+     epic_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Epic'
+     initiative_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Initiatives'
+     story_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Story'
+     task_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Task'
+     bug_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20Yes%20AND%20fixVersion%20%3D%20'+release_tag+'%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Bug'
+     bug_undone_url = PROTOCOL+ip+':'+str(port)+'/rest/api/2/search?jql=%22Release%20Included%22%20%3D%20No%20AND%20project%20%3D%20'+project_name+'%20AND%20issuetype%20%3D%20Bug'
+
      #GET RESPONSE FOR EACH ISSUE TYPE FOR A GIVEN RELEASE TAG
      epic_response = requests.get(epic_url,headers=headers,verify=False).json()
      initiative_response = requests.get(initiative_url,headers=headers,verify=False).json()
@@ -442,8 +444,10 @@ def jira_release_tag_look_up(ip,port,session_cookie,project_name,release_tag,cus
 
      #DICT FOR RETENTION - KEYS ARE ISSUE TYPE (STORY,TASK,EPIC,INITIATIVE)
      return_dict = {"INITIATIVE":parse_initiative_response(initiative_response,ip,port,session_cookie,release_tag,project_name), "EPIC":parse_epic_response(epic_response,ip,port,session_cookie,release_tag,project_name), "STORY":parse_story_response(story_response,ip,port,session_cookie,release_tag,project_name), "TASK":parse_task_response(task_response,ip,port,session_cookie,release_tag,project_name),"BUG":parse_bug_response(task_response,ip,port,session_cookie,release_tag,project_name),"BUG_UNDONE":parse_bug_undone_response(bug_undone_response,ip,port,session_cookie,release_tag,project_name)}
-     
+
      #GET ALL ASSOCIATED ISSUES OF AN INITIATIVE GROUPED IN ISSUE TYPE
+
+     #CHECK IF ANY TRACKERS UNDER THE INITIATIVE/EPIC/STORY - IS NOT DONE - THEN REMOVE INITIATIVE/EPIC/STORY
      for item in return_dict["INITIATIVE"]["INITIATIVES"]:
          if check_undone_epic_intiative(item['issue_id'],project_name,ip,port,session_cookie)==False:
             return_dict["INITIATIVE"]["INITIATIVES"].remove(item)
@@ -480,21 +484,23 @@ def jira_release_tag_look_up(ip,port,session_cookie,project_name,release_tag,cus
         return_dict["EPIC"]["TASKS"] = [item for item in return_dict["EPIC"]["TASKS"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
         return_dict["EPIC"]["BUGS"] = [item for item in return_dict["EPIC"]["BUGS"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
         return_dict["EPIC"]["MERGED_ISSUE"] = [item for item in return_dict["EPIC"]["MERGED_ISSUE"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
-       
+
         return_dict["STORY"]["STORIES"] = [item for item in return_dict["STORY"]["STORIES"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
         return_dict["STORY"]["TASKS"] = [item for item in return_dict["STORY"]["TASKS"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
         return_dict["STORY"]["BUGS"] = [item for item in return_dict["STORY"]["BUGS"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
         return_dict["STORY"]["MERGED_ISSUE"] = [item for item in return_dict["STORY"]["MERGED_ISSUE"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
-       
+
         return_dict["TASK"]["TASKS"] = [item for item in return_dict["TASK"]["TASKS"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
         return_dict["TASK"]["BUGS"] = [item for item in return_dict["TASK"]["BUGS"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
         return_dict["TASK"]["MERGED_ISSUE"] = [item for item in return_dict["TASK"]["MERGED_ISSUE"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
-       
+
         return_dict["BUG"]["TASKS"] = [item for item in return_dict["BUG"]["TASKS"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
         return_dict["BUG"]["BUGS"] = [item for item in return_dict["BUG"]["BUGS"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
         return_dict["BUG"]["MERGED_ISSUE"] = [item for item in return_dict["BUG"]["MERGED_ISSUE"] if ("internal" not in item['label'] and "Internal" not in item['label'])]
+     
      #RETURN DATA
      return return_dict
+
 def jira_validate(issue_url,session_cookie):
     headers = {
            'connection': "keep-alive",
@@ -533,3 +539,4 @@ def jira_query_update(username,password,field_id,ip,port,issue_id):
     #filename_out = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(20))
     #os.system("cat /tmp/curl_writer | /bin/bash > /tmp/"+filename_out)
     #return open('/tmp/'+filename_out,'r').read().split('\n')[0].split()[1]
+
