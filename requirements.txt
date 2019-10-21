@@ -66,6 +66,6 @@ virtualenv==16.0.0
 WeasyPrint==0.42.3
 webencodings==0.5.1
 websocket-client==0.32.0
-Werkzeug==0.14.1
+Werkzeug==0.15.3
 WTForms==2.2.1
 xvfbwrapper==0.2.9
