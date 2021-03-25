@@ -54,7 +54,7 @@ Pyphen==0.9.4
 #Pyrex
 python-cloudfiles
 pytz==2018.5
-PyYAML==3.11
+PyYAML==5.4
 requests==2.19.1
 retrying==1.3.3
 six==1.10.0
